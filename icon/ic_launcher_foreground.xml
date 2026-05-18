@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer glow ring -->
+    <path
+        android:fillColor="#1A00D4FF"
+        android:pathData="M54,54m-44,0a44,44 0,1 1,88 0a44,44 0,1 1,-88 0" />
+
+    <!-- Cyan circle border -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00D4FF"
+        android:strokeWidth="2"
+        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+
+    <!-- P letter -->
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M28,36 L28,72 L34,72 L34,58 L42,58
+            C48,58 52,54 52,47 C52,40 48,36 42,36 Z
+            M34,42 L41,42 C44,42 46,44 46,47
+            C46,50 44,52 41,52 L34,52 Z" />
+
+    <!-- C letter -->
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M72,44 C69,41 65,39 61,39
+            C53,39 47,45 47,54 C47,63 53,69 61,69
+            C65,69 69,67 72,64 L68,60
+            C66,62 64,63 61,63 C56,63 53,59 53,54
+            C53,49 56,45 61,45 C64,45 66,46 68,48 Z" />
+
+    <!-- V letter -->
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M56,36 L63,60 L70,36 L76,36 L67,72 L59,72 L50,36 Z" />
+
+    <!-- Small dot accent -->
+    <circle
+        android:fillColor="#00D4FF"
+        android:cx="54"
+        android:cy="80"
+        android:r="2" />
+
+</vector>
