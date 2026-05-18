@@ -1,59 +1,73 @@
-name: Build PCV APK
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+}
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+android {
+    namespace  = "com.pcv.app"
+    compileSdk = 35
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    defaultConfig {
+        applicationId = "com.pcv.app"
+        minSdk        = 26
+        targetSdk     = 35
+        versionCode   = 1
+        versionName   = "1.0.0"
+    }
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
+    buildTypes {
+        debug {
+            isDebuggable   = true
+            isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled   = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4.7.1
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    buildFeatures {
+        compose     = true
+        buildConfig = true
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3.2.2
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-
-      - name: Create local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
-
-      - name: Generate Gradle wrapper
-        run: |
-          gradle wrapper --gradle-version 8.9
-          chmod +x gradlew
-
-      - name: Strip invisible BOM characters from Kotlin files
-        run: |
-          echo "Checking for BOM characters..."
-          find . -name "*.kt" | while read f; do
-            sed -i '1s/^\xEF\xBB\xBF//' "$f"
-          done
-          echo "Done"
-
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Find APK
-        run: |
-          APK=$(find . -name "*.apk" | head -1)
-          echo "APK_PATH=$APK" >> $GITHUB_ENV
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: PCV-debug-apk
-          path: ${{ env.APK_PATH }}
-          if-no-files-found: error
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.ext)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.dash)
+    implementation(libs.androidx.media3.hls)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.android)
+    debugImplementation(libs.androidx.ui.tooling)
+}
