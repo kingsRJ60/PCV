@@ -1,0 +1,78 @@
+name: Build PCV APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4.7.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3.2.2
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Generate Gradle wrapper
+        run: |
+          gradle wrapper --gradle-version 8.9
+          chmod +x gradlew
+
+      - name: Strip BOM from Kotlin files
+        run: |
+          find . -name "*.kt" | while read f; do
+            sed -i '1s/^\xEF\xBB\xBF//' "$f"
+          done
+
+      - name: Bundle source files into assets for Code Lab
+        run: |
+          ASSET_DIR="app/src/main/assets/source"
+          mkdir -p "$ASSET_DIR"
+          SRC="app/src/main/java/com/pcv/app"
+          cp "$SRC/service/MediaSupervisorService.kt"  "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/media/ExoPlayerManager.kt"          "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/media/OverlayManager.kt"            "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/scheduler/MediaScheduler.kt"        "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/codelab/CodeImprovementEngine.kt"   "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/data/MediaModels.kt"                "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/MainActivity.kt"                    "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/Navigation.kt"                      "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/HomeScreen.kt"           "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/AudioScreen.kt"          "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/VideoScreen.kt"          "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/AdsScreen.kt"            "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/SchedulerScreen.kt"      "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/CodeLabScreen.kt"        "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/SharedComponents.kt"     "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/theme/Theme.kt"                  "$ASSET_DIR/" 2>/dev/null || true
+          echo "Assets bundled: $(ls $ASSET_DIR | wc -l) files"
+          ls "$ASSET_DIR"
+
+      - name: Show dependency versions
+        run: |
+          echo "=== Checking dependencies ==="
+          cat gradle/libs.versions.toml | grep -E "(media3|gson|okhttp)"
+          echo "=== app/build.gradle.kts dependencies ==="
+          grep -E "(media3|gson|okhttp)" app/build.gradle.kts || echo "Using hardcoded dependencies"
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+          if-no-files-found: error
