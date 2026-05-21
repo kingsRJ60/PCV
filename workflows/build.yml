@@ -35,49 +35,54 @@ jobs:
           gradle wrapper --gradle-version 8.9
           chmod +x gradlew
 
-      - name: Strip BOM characters from all Kotlin files
+      - name: Strip BOM from Kotlin files
         run: |
           find . -name "*.kt" | while read f; do
             sed -i '1s/^\xEF\xBB\xBF//' "$f"
           done
-          echo "BOM stripping complete"
+          echo "BOM strip done"
 
-      # ── AUTO-COPY SOURCE FILES INTO ASSETS FOR CODE LAB ──────────────────
-      - name: Bundle source files into assets for Code Lab
+      - name: Bundle source files into assets
         run: |
           ASSET_DIR="app/src/main/assets/source"
           mkdir -p "$ASSET_DIR"
           SRC="app/src/main/java/com/pcv/app"
+          cp "$SRC/service/MediaSupervisorService.kt"  "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/media/ExoPlayerManager.kt"          "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/media/OverlayManager.kt"            "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/scheduler/MediaScheduler.kt"        "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/codelab/CodeImprovementEngine.kt"   "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/data/MediaModels.kt"                "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/MainActivity.kt"                    "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/Navigation.kt"                      "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/HomeScreen.kt"           "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/AudioScreen.kt"          "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/VideoScreen.kt"          "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/AdsScreen.kt"            "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/SchedulerScreen.kt"      "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/CodeLabScreen.kt"        "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/screens/SharedComponents.kt"     "$ASSET_DIR/" 2>/dev/null || true
+          cp "$SRC/ui/theme/Theme.kt"                  "$ASSET_DIR/" 2>/dev/null || true
+          echo "Assets: $(ls $ASSET_DIR | wc -l) files bundled"
 
-          cp "$SRC/service/MediaSupervisorService.kt"   "$ASSET_DIR/"
-          cp "$SRC/media/ExoPlayerManager.kt"           "$ASSET_DIR/"
-          cp "$SRC/media/OverlayManager.kt"             "$ASSET_DIR/"
-          cp "$SRC/scheduler/MediaScheduler.kt"         "$ASSET_DIR/"
-          cp "$SRC/codelab/CodeImprovementEngine.kt"    "$ASSET_DIR/"
-          cp "$SRC/data/MediaModels.kt"                 "$ASSET_DIR/"
-          cp "$SRC/MainActivity.kt"                     "$ASSET_DIR/"
-          cp "$SRC/Navigation.kt"                       "$ASSET_DIR/"
-          cp "$SRC/ui/screens/HomeScreen.kt"            "$ASSET_DIR/"
-          cp "$SRC/ui/screens/AudioScreen.kt"           "$ASSET_DIR/"
-          cp "$SRC/ui/screens/VideoScreen.kt"           "$ASSET_DIR/"
-          cp "$SRC/ui/screens/AdsScreen.kt"             "$ASSET_DIR/"
-          cp "$SRC/ui/screens/SchedulerScreen.kt"       "$ASSET_DIR/"
-          cp "$SRC/ui/screens/CodeLabScreen.kt"         "$ASSET_DIR/"
-          cp "$SRC/ui/screens/SharedComponents.kt"      "$ASSET_DIR/"
-          cp "$SRC/ui/theme/Theme.kt"                   "$ASSET_DIR/"
-
-          echo "=== Assets bundled ==="
-          ls -la "$ASSET_DIR"
+      - name: Verify build files
+        run: |
+          echo "=== settings.gradle.kts ==="
+          cat settings.gradle.kts
+          echo ""
+          echo "=== root build.gradle.kts ==="
+          cat build.gradle.kts
+          echo ""
+          echo "=== app/build.gradle.kts plugins ==="
+          head -6 app/build.gradle.kts
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Confirm APK location
-        run: |
-          echo "=== APK files found ==="
-          find . -name "*.apk" 2>/dev/null | sort
+      - name: Find APK
+        run: find . -name "*.apk" | sort
 
-      - name: Upload debug APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4.6.2
         with:
           name: PCV-debug-apk
